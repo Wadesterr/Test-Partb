@@ -1,4 +1,8 @@
-
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package dbHelpers;
 
 import java.io.IOException;
@@ -13,25 +17,29 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import model.Customers;
 
-
-public class ReadQuery {
+/**
+ *
+ * @author Wade
+ */
+public class SearchQuery {
     
     private Connection conn;
     private ResultSet results;
     
-    public ReadQuery() {
-
+    
+    public SearchQuery(){
+        
         Properties props = new Properties();
         InputStream instr = getClass().getResourceAsStream("dbConn.properties");
         try {
             props.load(instr);
         } catch (IOException ex) {
-            Logger.getLogger(ReadQuery.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(SearchQuery.class.getName()).log(Level.SEVERE, null, ex);
         }
         try {
             instr.close();
         } catch (IOException ex) {
-            Logger.getLogger(ReadQuery.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(SearchQuery.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         String driver = props.getProperty("driver.name");
@@ -41,28 +49,39 @@ public class ReadQuery {
         try {
             Class.forName(driver);
         } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ReadQuery.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(SearchQuery.class.getName()).log(Level.SEVERE, null, ex);
         }
         try {
             conn = DriverManager.getConnection(url, username, pass);
         } catch (SQLException ex) {
-            Logger.getLogger(ReadQuery.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(SearchQuery.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     
     
-     public void doRead() {
+    public void doSearch (String firstName, String lastName){
+        
+        
         try {
-            String query = "Select * from customers ORDER BY custID ASC";
+            String query = "SELECT * FROM customers WHERE UPPER (firstName) Like ? or UPPER (lastName) Like ? ORDER BY custID ASC";
+            
             PreparedStatement ps = conn.prepareStatement(query);
+            ps.setString(1,"%" + firstName.toUpperCase() + "%");
+            ps.setString(2,"%" + lastName.toUpperCase() + "%");
+            
+            
             this.results = ps.executeQuery();
         } catch (SQLException ex) {
-            Logger.getLogger(ReadQuery.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(SearchQuery.class.getName()).log(Level.SEVERE, null, ex);
         }
+        
+        
+        
 
     }
-     
-     public String getHTMLtable() {
+    
+    
+    public String getHTMLtable() {
         String table = "";
         table += "<table>";
         
@@ -179,7 +198,7 @@ public class ReadQuery {
                 
             }
         } catch (SQLException ex) {
-            Logger.getLogger(ReadQuery.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(SearchQuery.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         table += "</table>";
